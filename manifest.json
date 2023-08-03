@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Productivity Manager",
+  "version": "0.0",
+  "description": "Helps you manage your productivity",
+  "permissions": ["activeTab", "storage"],
+  "background": {
+    "service_worker": "background/service_worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
