@@ -3,10 +3,9 @@
   "name": "Productivity Manager",
   "version": "0.0",
   "description": "Helps you manage your productivity",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["tabs", "activeTab", "storage"],
   "background": {
-    "service_worker": "background/service_worker.js",
-    "type": "module"
+    "service_worker": "service_worker.js"
   },
   "action": {
     "default_popup": "popup.html"
