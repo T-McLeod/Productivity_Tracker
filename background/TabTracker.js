@@ -5,7 +5,21 @@ class DomainTracker {
 
     addDomain(domain){
         domains.add(domain);
-        
+    }
+
+    static getDomain(url){
+        domain = "";
+        while(i < url.length && url.charAt(i) != '/'){
+            domain += url.charAt(i);
+        }
+        return domain;
+    }
+}
+
+class DomainObject {
+    constructor(url) {
+        this.url = url;
+        this.timeSpent
     }
 }
 
