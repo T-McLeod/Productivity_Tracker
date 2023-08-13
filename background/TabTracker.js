@@ -1,34 +1,46 @@
+const toPromise = (callback) => {
+    const promise = new Promise((resolve, reject) => {
+        try {
+            callback(resolve, reject);
+        }
+        catch (err) {
+            reject(err);
+        }
+    });
+    return promise;
+}
+
 class DomainTracker {
-    static numCreated = 0;
-
-
-    constructor() {
-        this.domains = new Set();
-        this.prefix = "DT" + numCreated + "_";
-        numCreated++;
+    static async updateDomObj(domainObject){
+        let domain = domainObject.domain;
+        let key = "DT_" + domain;
+        return toPromise((resolve, reject) => {
+            chrome.storage.local.set({[key]: domainObject}, (result) => {
+                if(chrome.runtime.lastError)
+                    reject(chrome.runtime.lastError);
+                resolve(result);
+            })
+        })
     }
 
-    async addDomain(domain){
-        domains.add(domain);
-        domainObject = new DomainObject(domain);
-        
+    static async getDomObj(domain){
+        let key = "DT_" + domain;
+        return toPromise((resolve, reject) => {
+            console.log("key: " + key);
+            chrome.storage.local.get([key], (result) => {
+                if(chrome.runtime.lastError)
+                    reject(chrome.runtime.lastError);
+                console.log(result[key]);
+                resolve(result[key]);
+            })
+        })
     }
 
-    addUrl(url){
-        this.addDomain(getDomain(url));
-    }
-
-    async updateDomObj(domainObject){
-        key = prefix + domainObject.domain;
-        //set local storage to key
-    }
-
-    static getDomain(url){
+    static urlToDomain(url){
         let arr = /(\w+\.)+\w+/.exec(url);
-        if(arr.length == 0)
-            return null;
-        else
+        if(arr)
             return arr[0];
+        return null
     }
 }
 
@@ -37,12 +49,8 @@ class DomainObject {
         this.domain = domain;
         this.timeSpent = 0;
     }
-}
 
-chrome.tabs.onActivated.addListener( (activeInfo) => {
-    const tabID = activeInfo.tabId
-    console.log(activeInfo);
-    chrome.tabs.get(tabID, (tab) => {
-        TimeLogger.logTime(tab.url);
-    })
-})
+    toString(){
+        return("At " + this.domain + ":\n    Time Spent- " + this.timeSpent);
+    }
+}

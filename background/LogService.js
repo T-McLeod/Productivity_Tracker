@@ -1,15 +1,3 @@
-const toPromise = (callback) => {
-    const promise = new Promise((resolve, reject) => {
-        try {
-            callback(resolve, reject);
-        }
-        catch (err) {
-            reject(err);
-        }
-    });
-    return promise;
-}
-
 const key = "TimeLog";
 
 class TimeLogger {
@@ -20,7 +8,6 @@ class TimeLogger {
                 if(chrome.runtime.lastError)
                     reject(chrome.runtime.lastError);
                 const researches = result.TimeLog ?? [];
-                console.log(researches);
                 resolve(researches);
             })
         })

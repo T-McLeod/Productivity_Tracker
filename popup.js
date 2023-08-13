@@ -1,16 +1,26 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    var log;
+    /*let myGlobalData = await chrome.runtime.sendMessage({ action: 'getGlobalData' });
+    console.log(myGlobalData);
+    const domainTracker = myGlobalData.domainTracker;
+    console.log(domainTracker.prefix);
 
-    log = await TimeLogger.getLog();
+    domains = DomainTracker.domains;
+    console.log(domains);
+    
+    for(domain in domains)
+        console.log(domain);*/
+
+    const tab = await chrome.tabs.query({ active: true, currentWindow: true });    
+    console.log(tab[0]);
+    console.log(tab[0].url);
+    let domain = DomainTracker.urlToDomain(tab[0].url);
+    console.log(domain);
+    domObj = await DomainTracker.getDomObj(domain);
+    console.log(domObj);
 
     const stamp = document.getElementById("timeStamp");
+    stamp.textContent = domObj.domain +": " + domObj.timeSpent;
 
-    if(log.length > 0)
-        stamp.textContent = log[log.length-1].time + ": " + log[log.length-1].event;
-    else
-        stamp.textContent = "none";
-
-    console.log(log);
 
     //TimeLogger.clearPages();
 })
