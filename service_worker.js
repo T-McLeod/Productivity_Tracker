@@ -10,6 +10,11 @@ async function init() {
     let onTask = 0;
     let offTask = 0;
 
+    let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = tabs[0];
+    let domain = DomainTracker.urlToDomain(tab.url);
+    TimeLogger.logTime("Chrome Opened", domain, new Date());
+
     chrome.alarms.create('reminder', { periodInMinutes: 15 });
     createNotification();
 }
@@ -20,17 +25,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-chrome.runtime.onSuspend.addListener(() => {
+chrome.runtime.onSuspend.addListener(async () => {
     console.log("Extension is about to be suspended (browser closing or extension disabled).");
   });
 
-  chrome.windows.onFocusChanged.addListener(windowId => {
+  chrome.windows.onFocusChanged.addListener(async (windowId) => {
     if (windowId === chrome.windows.WINDOW_ID_NONE) {
-      console.log("No focused window.");
-    } else {
-      console.log(`Window with ID ${windowId} is now focused.`);
+      return
     }
-  });
+
+    let tabs = await chrome.tabs.query({ active: true, windowId: windowId });
+    const tab = tabs[0];
+    let domain = DomainTracker.urlToDomain(tab.url);
+    const lastLog = await TimeLogger.getLastLog();
+    if(domain === lastLog.domain)
+        return;
+
+    if(!domains.has(domain)){
+        domains.add(domain);
+        DomainTracker.addDomain(domains, domain);
+    }
+
+    // Get delta time
+    const time = new Date(lastLog.time);
+    await updateTime(lastLog.domain, lastLog.lastDate, time, false);
+
+    TimeLogger.logTime("Window Switch", domain, time);
+});
 
 chrome.tabs.onActivated.addListener( async (activeInfo) => {
     const time = new Date();
