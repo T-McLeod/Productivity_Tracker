@@ -81,6 +81,22 @@ class DomainTracker {
             return arr[0];
         return "unknown";
     }
+
+    static clearDomain(domain){
+        let key = "DT_" + domain;
+        return toPromise((resolve, reject) => {
+            chrome.storage.local.remove([key], () => {
+                if(chrome.runtime.lastError)
+                    reject(chrom.runtime.lastError)
+                resolve()
+            })
+        })
+    }
+
+    static clearDomains(domains){
+        for(domain in domains)
+            DomainTracker.clearDomain(domain);
+    }
 }
 
 class DomainObject {

@@ -27,12 +27,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.runtime.onSuspend.addListener(async () => {
     console.log("Extension is about to be suspended (browser closing or extension disabled).");
-  });
+    DomainTracker.clearDomains(domains);
+});
 
   chrome.windows.onFocusChanged.addListener(async (windowId) => {
     if (windowId === chrome.windows.WINDOW_ID_NONE) {
       return
     }
+
+    const newTime = new Date();
 
     let tabs = await chrome.tabs.query({ active: true, windowId: windowId });
     const tab = tabs[0];
@@ -48,7 +51,7 @@ chrome.runtime.onSuspend.addListener(async () => {
 
     // Get delta time
     const time = new Date(lastLog.time);
-    await updateTime(lastLog.domain, lastLog.lastDate, time, false);
+    await updateTime(lastLog.domain, time, newTime, false);
 
     TimeLogger.logTime("Window Switch", domain, time);
 });
