@@ -19,7 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log(domObj);
 
     const stamp = document.getElementById("timeStamp");
-    stamp.textContent = domObj.domain +": " + domObj.timeSpent;
+    stamp.textContent = domObj.toString();
+
+    chrome.alarms.create('reminder', { when: 0 });
 
 
     //TimeLogger.clearPages();

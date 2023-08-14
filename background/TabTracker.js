@@ -11,6 +11,17 @@ const toPromise = (callback) => {
 }
 
 class DomainTracker {
+    static async addDomain(domain){
+        let key = "DT_" + domain;
+        return toPromise((resolve, reject) => {
+            chrome.storage.local.set({[key]: new DomainObject(domain)}, (result) => {
+                if(chrome.runtime.lastError)
+                    reject(chrome.runtime.lastError);
+                resolve(result);
+            })
+        })
+    }
+
     static async updateDomObj(domainObject){
         let domain = domainObject.domain;
         let key = "DT_" + domain;
@@ -30,8 +41,8 @@ class DomainTracker {
             chrome.storage.local.get([key], (result) => {
                 if(chrome.runtime.lastError)
                     reject(chrome.runtime.lastError);
-                console.log(result[key]);
-                resolve(result[key]);
+                console.log(DomainObject.create(result[key]));
+                resolve(DomainObject.create(result[key]));
             })
         })
     }
@@ -40,7 +51,7 @@ class DomainTracker {
         let arr = /(\w+\.)+\w+/.exec(url);
         if(arr)
             return arr[0];
-        return null
+        return "unknown";
     }
 }
 
@@ -50,7 +61,13 @@ class DomainObject {
         this.timeSpent = 0;
     }
 
+    static create(object){
+        const domObj = new DomainObject(object.domain);
+        domObj.timeSpent = object.timeSpent;
+        return domObj
+    }
+
     toString(){
-        return("At " + this.domain + ":\n    Time Spent- " + this.timeSpent);
+        return("At " + this.domain + ": " + this.timeSpent);
     }
 }

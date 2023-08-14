@@ -3,7 +3,8 @@
   "name": "Productivity Manager",
   "version": "0.0",
   "description": "Helps you manage your productivity",
-  "permissions": ["tabs", "activeTab", "storage"],
+  "permissions": ["tabs", "activeTab", "storage", "alarms",
+  "notifications"],
   "background": {
     "service_worker": "service_worker.js"
   },

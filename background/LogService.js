@@ -13,10 +13,16 @@ class TimeLogger {
         })
     }
 
-    static logTime = async(event) => {
+    static getLastLog = async() => {
+        let logs = await TimeLogger.getLog();
+        console.log(logs);
+        return logs[logs.length - 1];
+    }
+
+    static logTime = async(event, domain, date) => {
         const log = await this.getLog();
-        const time = new Date().toLocaleTimeString();
-        const updatedLog = [...log, {time, event}];
+        const time = date.toString();
+        const updatedLog = [...log, {time, event, domain}];
         console.log(updatedLog);
 
         return toPromise((resolve, reject) => {
