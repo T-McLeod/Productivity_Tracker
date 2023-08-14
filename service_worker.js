@@ -24,7 +24,9 @@ chrome.tabs.onActivated.addListener( async (activeInfo) => {
     if(lastLog){ //Not end solution, need to handle what happens if there is no log yet
         lastDomain = lastLog.domain;
 
-        if(domain == lastDomain)
+
+
+        if(domain === lastDomain)
             return
 
         if(!domains.has(domain)){
@@ -43,9 +45,11 @@ chrome.tabs.onActivated.addListener( async (activeInfo) => {
         console.log(domObj);
         domObj.timeSpent += deltaTime;
         DomainTracker.updateDomObj(domObj);
+
+
     } else {
         domains.add(domain);
-        DomainTracker.updateDomObj(domain);
+        DomainTracker.addDomain(domain);
     }
 
     // Add new log
@@ -66,11 +70,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 
 chrome.alarms.create('reminder', { periodInMinutes: 15 });
+let notificationNum = 0;
 createNotification();
 
 function createNotification() {
-    console.log("here");
-    chrome.notifications.create('onTask', {
+    console.log("notification sent!");
+    notificationId = 'onTask' + notificationNum;
+    notificationNum++;
+    chrome.notifications.create(notificationId, {
         type: 'basic',
         iconUrl: 'focus.png',
         title: 'Are you on task?',
@@ -79,16 +86,20 @@ function createNotification() {
             { title: 'Yes, I have been on task and working.' },
             { title: 'No, I have not been on task and working' }
         ],
+        requireInteraction: true,
         priority: 2
     });
 }
 
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
-    if (notificationId === 'onTask') {
+    if (notificationId.substring(0, 6) === 'onTask') {
         if (buttonIndex === 0) {
+            console.log("User on task");
             onTask++;
         } else if (buttonIndex === 1) {
+            console.log("User not on task");
             offTask;
         }
+        chrome.notifications.clear(notificationId);
     }
 });

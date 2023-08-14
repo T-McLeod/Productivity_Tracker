@@ -21,8 +21,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     const stamp = document.getElementById("timeStamp");
     stamp.textContent = domObj.toString();
 
-    chrome.alarms.create('reminder', { when: 0 });
-
-
     //TimeLogger.clearPages();
 })
