@@ -1,14 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    /*let myGlobalData = await chrome.runtime.sendMessage({ action: 'getGlobalData' });
-    console.log(myGlobalData);
-    const domainTracker = myGlobalData.domainTracker;
-    console.log(domainTracker.prefix);
-
-    domains = DomainTracker.domains;
-    console.log(domains);
-    
-    for(domain in domains)
-        console.log(domain);*/
 
     const tab = await chrome.tabs.query({ active: true, currentWindow: true });    
     console.log(tab[0]);

@@ -23,6 +23,7 @@ class TimeLogger {
         const log = await this.getLog();
         const time = date.toString();
         const updatedLog = [...log, {time, event, domain}];
+        console.log("Adding log");
         console.log(updatedLog);
 
         return toPromise((resolve, reject) => {

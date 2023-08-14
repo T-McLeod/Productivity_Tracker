@@ -11,10 +11,41 @@ const toPromise = (callback) => {
 }
 
 class DomainTracker {
-    static async addDomain(domain){
+    static async getDomainSet(){
+        const key = "DTSet";
+        return toPromise((resolve, reject) => {
+            console.log("Retrieving " + key);
+            chrome.storage.local.get([key], (result) => {
+                if(chrome.runtime.lastError)
+                    reject(chrome.runtime.lastError);
+                if(!result[key] && Object.keys(result.key).length !== 0){
+                    console.log("Retrieved Set");
+                    console.log(result[key]);
+                    resolve(result[key]);
+                } else {
+                    console.log("New domain set created");
+                    resolve(new Set());
+                }
+            })
+        })
+    }
+
+    static async addDomain(domains, domain){
         console.log("adding " + domain);
         const newDomainObj = new DomainObject(domain);
         await this.updateDomObj(newDomainObj);
+
+        console.log("Updating domain set");
+        console.log(domains);
+
+        const key = "DTSet";
+        return toPromise((resolve, reject) => {
+            chrome.storage.local.set({[key]: domains}, (result) => {
+                if(chrome.runtime.lastError)
+                    reject(chrome.runtime.lastError);
+                resolve(result);
+            })
+        })
     }
 
     static async updateDomObj(domainObject){

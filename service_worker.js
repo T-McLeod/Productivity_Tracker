@@ -1,8 +1,18 @@
 importScripts('background/TabTracker.js', 'background/LogService.js');
 
-/*const myGlobalData = {
-    domainTracker: new DomainTracker()
-};*/
+let domains;
+let onTask = 0;
+let offTask = 0;
+
+async function init() {
+    domains = new Set(await DomainTracker.getDomainSet());
+    console.log(domains);
+    let onTask = 0;
+    let offTask = 0;
+
+    chrome.alarms.create('reminder', { periodInMinutes: 15 });
+    createNotification();
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getGlobalData') {
@@ -10,9 +20,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-const domains = new Set();
-let onTask = 0;
-let offTask = 0;
+chrome.runtime.onSuspend.addListener(() => {
+    console.log("Extension is about to be suspended (browser closing or extension disabled).");
+  });
+
+  chrome.windows.onFocusChanged.addListener(windowId => {
+    if (windowId === chrome.windows.WINDOW_ID_NONE) {
+      console.log("No focused window.");
+    } else {
+      console.log(`Window with ID ${windowId} is now focused.`);
+    }
+  });
 
 chrome.tabs.onActivated.addListener( async (activeInfo) => {
     const time = new Date();
@@ -31,30 +49,31 @@ chrome.tabs.onActivated.addListener( async (activeInfo) => {
 
         if(!domains.has(domain)){
             domains.add(domain);
-            DomainTracker.addDomain(domain);
+            DomainTracker.addDomain(domains, domain);
         }
 
         // Get delta time
         const lastDate = new Date(lastLog.time);
-        console.log(lastDate);
-        deltaTime = time - lastDate;
-        console.log("Time: " + deltaTime);
-
-        // Update domObj
-        const domObj = await DomainTracker.getDomObj(lastDomain);
-        console.log(domObj);
-        domObj.timeSpent += deltaTime;
-        DomainTracker.updateDomObj(domObj);
-
-
+        await updateTime(lastDomain, lastDate, time, false);
     } else {
         domains.add(domain);
-        DomainTracker.addDomain(domain);
+        await DomainTracker.addDomain(domains, domain);
     }
 
     // Add new log
     TimeLogger.logTime("TabSwitch", domain, time);
 })
+
+async function updateTime(lastDomain, lastDate, newTime, log = true){
+    deltaTime = newTime - lastDate;
+    console.log("Adding " + deltaTime + "ms to " + lastDomain);
+
+    // Update domObj
+    const domObj = await DomainTracker.getDomObj(lastDomain);
+    domObj.timeSpent += deltaTime;
+    console.log(domObj);
+    await DomainTracker.updateDomObj(domObj);
+}
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getDomains') {
@@ -68,15 +87,10 @@ chrome.alarms.onAlarm.addListener((alarm) => {
     }
 });
 
-
-chrome.alarms.create('reminder', { periodInMinutes: 15 });
-let notificationNum = 0;
-createNotification();
-
 function createNotification() {
-    console.log("notification sent!");
-    notificationId = 'onTask' + notificationNum;
-    notificationNum++;
+    const time = new Date().toLocaleTimeString()
+    console.log("notification sent at " + time);
+    notificationId = 'onTask_' + time;
     chrome.notifications.create(notificationId, {
         type: 'basic',
         iconUrl: 'focus.png',
@@ -103,3 +117,5 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
         chrome.notifications.clear(notificationId);
     }
 });
+
+init();
