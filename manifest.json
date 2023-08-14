@@ -4,7 +4,7 @@
   "version": "0.0",
   "description": "Helps you manage your productivity",
   "permissions": ["tabs", "activeTab", "storage", "alarms",
-  "notifications"],
+  "notifications", "webNavigation"],
   "background": {
     "service_worker": "service_worker.js"
   },

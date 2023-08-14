@@ -69,8 +69,10 @@ class DomainTracker {
             chrome.storage.local.get([key], (result) => {
                 if(chrome.runtime.lastError)
                     reject(chrome.runtime.lastError);
-                console.log(result);
-                resolve(DomainObject.create(result[key]));
+                if(result[key])
+                    resolve(DomainObject.create(result[key]));
+                else
+                    reject("Domain Object not found: " + key);
             })
         })
     }

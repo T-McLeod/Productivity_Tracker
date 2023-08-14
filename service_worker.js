@@ -30,6 +30,34 @@ chrome.runtime.onSuspend.addListener(async () => {
     DomainTracker.clearDomains(domains);
 });
 
+chrome.webNavigation.onCompleted.addListener(async (details) => {
+    const newTime = new Date();
+
+    if (details.frameId === 0){
+        let tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        const tab = tabs[0];
+
+        const loadedDomain = DomainTracker.urlToDomain(details.url);
+        const currentDomain = DomainTracker.urlToDomain(tab.url);
+        const lastLog = await TimeLogger.getLastLog();
+
+        //Checks if the content was loaded in the current tab and the content is a different domain than the last log
+        if(currentDomain === loadedDomain && loadedDomain !== lastLog.domain){
+            const domain = loadedDomain;
+            if(!domains.has(domain)){
+                domains.add(domain);
+                DomainTracker.addDomain(domains, domain);
+            }
+        
+            // Get delta time
+            const time = new Date(lastLog.time);
+            await updateTime(lastLog.domain, time, newTime, false);
+        
+            TimeLogger.logTime("Loaded New Domain", loadedDomain, time);
+        }
+    }
+});
+
   chrome.windows.onFocusChanged.addListener(async (windowId) => {
     if (windowId === chrome.windows.WINDOW_ID_NONE) {
       return
